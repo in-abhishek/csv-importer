@@ -7,6 +7,7 @@ function App() {
   const [search, setSearch] = useState("");
   const [selectedColumn, setSelectedColumn] = useState("");
   const [fileName, setFileName] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const formatHeader = (header) => {
     return header
@@ -15,24 +16,27 @@ function App() {
       .join(" ");
   };
 
-  const handleFileUpload = (e) => {
-    const file = e.target.files?.[0];
+ const handleFileUpload = (e) => {
+  const file = e.target.files?.[0];
 
-    if (!file) return;
+  if (!file) return;
 
-    setFileName(file.name);
+  setLoading(true);
+  setFileName(file.name);
 
-    Papa.parse(file, {
-      header: true,
-      skipEmptyLines: true,
-      complete: (results) => {
-        setData(results.data);
-      },
-      error: (error) => {
-        console.error(error);
-      },
-    });
-  };
+  Papa.parse(file, {
+    header: true,
+    skipEmptyLines: true,
+    complete: (results) => {
+      setData(results.data);
+      setLoading(false);
+    },
+    error: (error) => {
+      console.error(error);
+      setLoading(false);
+    },
+  });
+};
 
   const headers = useMemo(() => {
     return data.length ? Object.keys(data[0]) : [];
@@ -71,14 +75,15 @@ function App() {
         </div>
 
         <label className="upload-btn">
-          Upload CSV
-          <input
-            type="file"
-            accept=".csv"
-            hidden
-            onChange={handleFileUpload}
-          />
-        </label>
+  {loading ? "Processing..." : "Upload CSV"}
+
+  <input
+    type="file"
+    accept=".csv"
+    hidden
+    onChange={handleFileUpload}
+  />
+</label>
       </div>
 
       {data.length > 0 && (
@@ -86,9 +91,12 @@ function App() {
           <div className="toolbar">
             <div className="filter-group">
               <select
-                value={selectedColumn}
-                onChange={(e) => setSelectedColumn(e.target.value)}
-              >
+                  value={selectedColumn}
+                  onChange={(e) => {
+                    setSelectedColumn(e.target.value);
+                    setSearch("");
+                  }}
+                >
                 <option value="">All Columns</option>
 
                 {headers.map((header) => (
@@ -155,20 +163,34 @@ function App() {
               </tbody>
             </table>
           </div>
-        </>
-      )}
+          </>
+        )}
 
-      {!data.length && (
-        <div className="empty-upload">
-          <div className="empty-card">
-            <h2>Upload a CSV file to get started</h2>
-            <p>
-              Select a CSV file and its contents will
-              appear here with filtering support.
-            </p>
+      {loading ? (
+          <div className="loading-container">
+            <div className="loading-card">
+              <h2>Processing CSV File</h2>
+              <p>
+                Parsing records and preparing dashboard...
+              </p>
+
+              <div className="progress-bar">
+                <div className="progress-fill"></div>
+              </div>
+            </div>
           </div>
-        </div>
-      )}
+        ) : !data.length ? (
+          <div className="empty-upload">
+            <div className="empty-card">
+              <h2>Upload a CSV file to get started</h2>
+
+              <p>
+                Select a CSV file and its contents will
+                appear here with filtering support.
+              </p>
+            </div>
+          </div>
+        ) : null}
     </div>
   );
 }
