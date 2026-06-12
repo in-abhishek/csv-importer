@@ -16,27 +16,32 @@ function App() {
       .join(" ");
   };
 
- const handleFileUpload = (e) => {
-  const file = e.target.files?.[0];
+      const handleFileUpload = (e) => {
+        const file = e.target.files?.[0];
 
-  if (!file) return;
+        if (!file) return;
 
-  setLoading(true);
-  setFileName(file.name);
+        setLoading(true);
 
-  Papa.parse(file, {
-    header: true,
-    skipEmptyLines: true,
-    complete: (results) => {
-      setData(results.data);
-      setLoading(false);
-    },
-    error: (error) => {
-      console.error(error);
-      setLoading(false);
-    },
-  });
-};
+        setData([]);
+        setSearch("");
+        setSelectedColumn("");
+
+        setFileName(file.name);
+
+        Papa.parse(file, {
+          header: true,
+          skipEmptyLines: true,
+          complete: (results) => {
+            setData(results.data);
+            setLoading(false);
+          },
+          error: (error) => {
+            console.error(error);
+            setLoading(false);
+          },
+        });
+      };
 
   const headers = useMemo(() => {
     return data.length ? Object.keys(data[0]) : [];
@@ -86,7 +91,7 @@ function App() {
 </label>
       </div>
 
-      {data.length > 0 && (
+      {!loading && data.length > 0 && (
         <>
           <div className="toolbar">
             <div className="filter-group">
