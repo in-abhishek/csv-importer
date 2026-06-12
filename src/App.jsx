@@ -174,7 +174,7 @@ function App() {
                 Parsing records and preparing dashboard...
               </p>
 
-              <div className="progress-bar">
+              <div className="progress-bar"> 
                 <div className="progress-fill"></div>
               </div>
             </div>
